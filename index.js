@@ -2,6 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const session = require('express-session')
 const routes = require('./router/friends.js')
+var os = require("os");
+
 
 let users = []
 
@@ -41,9 +43,10 @@ app.use(express.json());
 
 // Middleware to authenticate requests to "/friends" endpoint
 app.use("/friends", function auth(req, res, next) {
-    // Check if user is logged in and has valid access token
-    if (req.session.authorization) {
-        let token = req.session.authorization['accessToken'];
+   
+    const token = req.query.token
+    if (token) {
+        console.log(token);     
 
         // Verify JWT token
         jwt.verify(token, "access", (err, user) => {
@@ -51,11 +54,11 @@ app.use("/friends", function auth(req, res, next) {
                 req.user = user;
                 next(); // Proceed to the next middleware
             } else {
-                return res.status(403).json({ message: "User not authenticated" });
+                return res.status(403).json( "User not authenticated" + os.EOL);
             }
         });
     } else {
-        return res.status(403).json({ message: "User not logged in" });
+        return res.status(403).json( "User not logged in" + os.EOL);
     }
 });
 
@@ -66,7 +69,7 @@ app.post("/login", (req, res) => {
 
     // Check if username or password is missing
     if (!username || !password) {
-        return res.status(404).json({ message: "Error logging in" });
+        return res.status(404).json({ message: "Error logging in" + os.EOL});
     }
 
     // Authenticate user
@@ -80,9 +83,9 @@ app.post("/login", (req, res) => {
         req.session.authorization = {
             accessToken, username
         }
-        return res.status(200).send("User successfully logged in");
+        return res.status(200).send("User successfully logged in" + os.EOL + accessToken + os.EOL);
     } else {
-        return res.status(208).json({ message: "Invalid Login. Check username and password" });
+        return res.status(208).json({ message: "Invalid Login. Check username and password" + os.EOL});
     }
 });
 
@@ -97,13 +100,13 @@ app.post("/register", (req, res) => {
         if (!doesExist(username)) {
             // Add the new user to the users array
             users.push({"username": username, "password": password});
-            return res.status(200).json({message: "User successfully registered. Now you can login"});
+            return res.status(200).send( "User successfully registered. Now you can login" + os.EOL);
         } else {
-            return res.status(404).json({message: "User already exists!"});
+            return res.status(404).send( "User already exists!" + os.EOL);
         }
     }
     // Return error if username or password is missing
-    return res.status(404).json({message: "Unable to register user."});
+    return res.status(404).json({message: "Unable to register user." + os.EOL});
 });
 
 
@@ -111,4 +114,4 @@ const PORT =5000;
 
 app.use("/friends", routes);
 
-app.listen(PORT,()=>console.log("Server is running"));
+app.listen(PORT,()=>console.log("Server is running" + os.EOL));
